@@ -3,17 +3,17 @@ Docker Learning Project
 Branches:
 
 initial<br>
-Minimal working project. Prints 'Hello from Docker!' to the console.
-Build: docker build -t hello-java .
-Run: docker run --rm hello-java
+Minimal working project. Prints 'Hello from Docker!' to the console.<br>
+Build: docker build -t hello-java .<br>
+Run: docker run --rm hello-java<br>
 
 cycle<br>
-Slightly more advanced project. Continuously prints 'Hello from Docker!' to the console.
-Build: docker build -t hello-java .
-Run: docker run hello-java
+Slightly more advanced project. Continuously prints 'Hello from Docker!' to the console.<br>
+Build: docker build -t hello-java .<br>
+Run: docker run hello-java<br>
 
 port<br>
-Demonstrates port forwarding.
-Build: docker build -t hello-java .
-Run: docker run --rm -p 8080:8080 hello-java
+Demonstrates port forwarding.<br>
+Build: docker build -t hello-java .<br>
+Run: docker run --rm -p 8080:8080 hello-java<br>
 Access the port: http://localhost:8080/
