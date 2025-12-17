@@ -7,12 +7,12 @@ Minimal working project. Prints 'Hello from Docker!' to the console.<br>
 Build: docker build -t hello-java .<br>
 Run: docker run --rm hello-java<br>
 
-cycle<br>
+[cycle](https://github.com/SergeiAidinov/hello_docker/tree/cycle)<br>
 Slightly more advanced project. Continuously prints 'Hello from Docker!' to the console.<br>
 Build: docker build -t hello-java .<br>
 Run: docker run hello-java<br>
 
-port<br>
+[port](https://github.com/SergeiAidinov/hello_docker/tree/port)<br>
 Demonstrates port forwarding.<br>
 Build: docker build -t hello-java .<br>
 Run: docker run --rm -p 8080:8080 hello-java<br>
