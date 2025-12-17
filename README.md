@@ -2,7 +2,7 @@ Docker Learning Project
 
 Branches:
 
-initial<br>
+[initial](https://github.com/SergeiAidinov/hello_docker/tree/initial)<br>
 Minimal working project. Prints 'Hello from Docker!' to the console.<br>
 Build: docker build -t hello-java .<br>
 Run: docker run --rm hello-java<br>
