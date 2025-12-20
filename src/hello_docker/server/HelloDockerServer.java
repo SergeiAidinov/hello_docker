@@ -1,14 +1,15 @@
-package hello_docker;
+package hello_docker.server;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.time.LocalDateTime;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
-public class HelloDocker {
+public class HelloDockerServer {
 
 	public static void main(String[] args) throws IOException {
 		HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
@@ -21,7 +22,7 @@ public class HelloDocker {
 	static class MyHandler implements HttpHandler {
 		@Override
 		public void handle(HttpExchange t) throws IOException {
-			String response = "Hello from Docker HTTP!";
+			String response = "Hello from Docker HTTP at " + LocalDateTime.now();
 			t.sendResponseHeaders(200, response.getBytes().length);
 			OutputStream os = t.getResponseBody();
 			os.write(response.getBytes());

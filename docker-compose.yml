@@ -1,0 +1,14 @@
+services:
+  java-server:
+    build:
+      context: .
+      dockerfile: src/hello_docker/server/Dockerfile
+    ports:
+      - "8080:8080"
+
+  java-client:
+    build:
+      context: .
+      dockerfile: src/hello_docker/client/Dockerfile
+    depends_on:
+      - java-server
