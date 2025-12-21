@@ -1,0 +1,12 @@
+services:
+  java-server:
+    build:
+      context: ./server
+    ports:
+      - "8080:8080"
+
+  java-client:
+    build:
+      context: ./client
+    depends_on:
+      - java-server
