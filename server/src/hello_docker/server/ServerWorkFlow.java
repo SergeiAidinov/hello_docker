@@ -55,7 +55,7 @@ public class ServerWorkFlow {
 				String idStr = path.substring(1); // "1"
 				int id = Integer.parseInt(idStr);
 				result = handleGetRequest(id);
-				System.out.println(id);
+				System.out.println(result);
 			}
 			String response = result; //"Hello from Docker HTTP at " + LocalDateTime.now() + result.toString();
 			httpExchange.sendResponseHeaders(200, response.getBytes().length);
@@ -69,7 +69,7 @@ public class ServerWorkFlow {
 				CallableStatement callableStatement = connection.prepareCall("select * from messages where id = ?");
 				callableStatement.setLong(1, id);
 				ResultSet rs = callableStatement.executeQuery();
-				if (rs.next()) rs.getString("content");
+				if (rs.next()) return rs.getString("content");
 
 			} catch (Exception e) {
 				e.printStackTrace();
