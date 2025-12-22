@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   postgres:
     image: postgres:15
@@ -8,7 +10,7 @@ services:
       POSTGRES_PASSWORD: password
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     ports:
       - "5433:5432"
     networks:
@@ -29,6 +31,8 @@ services:
       - "8080:8080"
     networks:
       - hello-net
+    volumes:
+      - ./server/src:/app/src   # bind mount исходников для live-изменений
 
   java-client:
     build:
@@ -39,6 +43,8 @@ services:
       - java-server
     networks:
       - hello-net
+    volumes:
+      - ./client/src:/app/src   # bind mount исходников клиента
 
 networks:
   hello-net:
