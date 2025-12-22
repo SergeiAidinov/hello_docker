@@ -18,7 +18,7 @@ Build: docker build -t hello-java .<br>
 Run: docker run --rm -p 8080:8080 hello-java<br>
 Access the port: http://localhost:8080/<br>
 
-[bridge](https://github.com/SergeiAidinov/hello_docker/tree/bridge)<br>
+[bridge](https://github.com/SergeiAidinov/hello_docker/tree/client-server)<br>
 Multi-container Java project with server and client.<br>
 Build: docker compose up --build<br>
 Run: docker compose up<br>
