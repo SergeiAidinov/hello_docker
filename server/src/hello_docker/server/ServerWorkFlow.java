@@ -49,33 +49,33 @@ public class ServerWorkFlow {
 		public void handle(HttpExchange httpExchange) throws IOException {
 			String method = httpExchange.getRequestMethod();
 			System.out.println(method);
-			ResultSet rs = null;
+			String result = null;
 			if (method.equals("GET")) {
 				String path = httpExchange.getRequestURI().getPath();
 				String idStr = path.substring(1); // "1"
 				int id = Integer.parseInt(idStr);
-				rs = handleGetRequest(id);
+				result = handleGetRequest(id);
 				System.out.println(id);
 			}
-			String response = "Hello from Docker HTTP at " + LocalDateTime.now() + rs.toString();
+			String response = result; //"Hello from Docker HTTP at " + LocalDateTime.now() + result.toString();
 			httpExchange.sendResponseHeaders(200, response.getBytes().length);
 			OutputStream os = httpExchange.getResponseBody();
 			os.write(response.getBytes());
 			os.close();
 		}
 
-		private ResultSet handleGetRequest(int id) {
+		private String handleGetRequest(int id) {
 			try (Connection connection = DriverManager.getConnection(url, user, password)) {
 				CallableStatement callableStatement = connection.prepareCall("select * from messages where id = ?");
 				callableStatement.setLong(1, id);
 				ResultSet rs = callableStatement.executeQuery();
-				return rs;
+				if (rs.next()) rs.getString("content");
 
 			} catch (Exception e) {
 				e.printStackTrace();
-				return null;
 
 			}
+			return null;
 		}
 
 	}
