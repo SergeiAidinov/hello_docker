@@ -1,0 +1,28 @@
+# Docker Compose file for a simple multi-container Java application
+# The project consists of two services:
+# 1) java-server — HTTP server running on port 8080
+# 2) java-client — client that sends HTTP requests to the server
+
+services:
+
+  # Java HTTP server
+  java-server:
+    # Build the Docker image from the Dockerfile located in ./server
+    build:
+      context: ./server
+
+    # Expose port 8080 from the container to port 8080 on the host machine
+    # This is required to access the server from the host browser
+    ports:
+      - "8080:8080"
+
+  # Java client
+  java-client:
+    # Build the Docker image from the Dockerfile located in ./client
+    build:
+      context: ./client
+
+    # Ensure the server container is started before the client
+    # Note: this does NOT guarantee that the server is already ready to accept connections
+    depends_on:
+      - java-server
