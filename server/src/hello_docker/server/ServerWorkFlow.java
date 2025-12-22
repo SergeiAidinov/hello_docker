@@ -57,7 +57,7 @@ public class ServerWorkFlow {
 				result = handleGetRequest(id);
 				System.out.println(result);
 			}
-			String response = result; //"Hello from Docker HTTP at " + LocalDateTime.now() + result.toString();
+			String response = Objects.nonNull(result) ? result : "Hello from Docker HTTP at " + LocalDateTime.now();
 			httpExchange.sendResponseHeaders(200, response.getBytes().length);
 			OutputStream os = httpExchange.getResponseBody();
 			os.write(response.getBytes());
