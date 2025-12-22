@@ -1,28 +1,48 @@
-# Docker Compose file for a simple multi-container Java application
-# The project consists of two services:
-# 1) java-server — HTTP server running on port 8080
-# 2) java-client — client that sends HTTP requests to the server
-
 services:
+  postgres:
+    image: postgres:15
+    container_name: hello_docker-postgres
+    environment:
+      POSTGRES_DB: hello_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5433:5432"
+    networks:
+      - hello-net
 
-  # Java HTTP server
   java-server:
-    # Build the Docker image from the Dockerfile located in ./server
     build:
       context: ./server
-
-    # Expose port 8080 from the container to port 8080 on the host machine
-    # This is required to access the server from the host browser
+      dockerfile: Dockerfile
+    container_name: volumes-java-server
+    depends_on:
+      - postgres
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/hello_db
+      DB_USER: user
+      DB_PASSWORD: password
     ports:
       - "8080:8080"
+    networks:
+      - hello-net
 
-  # Java client
   java-client:
-    # Build the Docker image from the Dockerfile located in ./client
     build:
       context: ./client
-
-    # Ensure the server container is started before the client
-    # Note: this does NOT guarantee that the server is already ready to accept connections
+      dockerfile: Dockerfile
+    container_name: volumes-java-client
     depends_on:
       - java-server
+    networks:
+      - hello-net
+
+networks:
+  hello-net:
+    driver: bridge
+
+volumes:
+  pgdata:
