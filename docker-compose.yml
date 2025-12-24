@@ -35,6 +35,8 @@ services:
       - ./server/src:/app/src   # bind mount исходников для live-изменений
 
   java-client:
+    stdin_open: true   # -i
+    tty: true          # -t
     build:
       context: ./client
       dockerfile: Dockerfile
