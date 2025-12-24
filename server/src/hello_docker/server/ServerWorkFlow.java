@@ -49,24 +49,29 @@ public class ServerWorkFlow {
 	    @Override
 	    public void handle(HttpExchange httpExchange) throws IOException {
 	        String method = httpExchange.getRequestMethod();
-	        System.out.println(method);
-	        String response;
+	        String response = "";
 
-	        try {
+	        try (Connection connection = DriverManager.getConnection(url, user, password)) {
+
 	            if ("GET".equalsIgnoreCase(method)) {
 	                String path = httpExchange.getRequestURI().getPath();
-	                String idStr = path.substring(1); // Получаем "1" из "/1"
-	                int id = Integer.parseInt(idStr);
-	                response = handleGetRequest(id);
+
+	                if ("/count".equals(path)) {
+	                    response = getCount(connection);
+	                } else if (path.length() > 1) {
+	                    int id = Integer.parseInt(path.substring(1));
+	                    response = getMessageById(connection, id);
+	                } else {
+	                    response = "Invalid GET request";
+	                }
 
 	            } else if ("POST".equalsIgnoreCase(method)) {
 	                InputStream is = httpExchange.getRequestBody();
-	                String message = new String(is.readAllBytes());
-	                response = handlePostRequest(message);
-
-	            } else {
-	                response = "Unsupported method";
+	                String body = new String(is.readAllBytes());
+	                int id = insertMessage(connection, body);
+	                response = "Inserted message with id = " + id;
 	            }
+
 	        } catch (Exception e) {
 	            e.printStackTrace();
 	            response = "Error: " + e.getMessage();
@@ -78,37 +83,32 @@ public class ServerWorkFlow {
 	        }
 	    }
 
-	    /** Получение сообщения по id */
-	    private String handleGetRequest(int id) {
-	        try (Connection connection = DriverManager.getConnection(url, user, password);
-	             CallableStatement stmt = connection.prepareCall("SELECT * FROM messages WHERE id = ?")) {
-	            stmt.setLong(1, id);
+	    private String getMessageById(Connection connection, int id) throws Exception {
+	        try (CallableStatement stmt = connection.prepareCall("SELECT content FROM messages WHERE id = ?")) {
+	            stmt.setInt(1, id);
 	            ResultSet rs = stmt.executeQuery();
-	            if (rs.next()) {
-	                return rs.getString("content");
-	            }
-	        } catch (Exception e) {
-	            e.printStackTrace();
+	            if (rs.next()) return rs.getString("content");
 	        }
 	        return "Message not found";
 	    }
 
-	    /** Сохранение сообщения в базу */
-	    private String handlePostRequest(String message) {
-	        try (Connection connection = DriverManager.getConnection(url, user, password);
-	             java.sql.PreparedStatement stmt = connection.prepareStatement(
-	                     "INSERT INTO messages (content) VALUES (?) RETURNING id")) {
-	            stmt.setString(1, message);
-	            ResultSet rs = stmt.executeQuery();
-	            if (rs.next()) {
-	                int id = rs.getInt("id");
-	                return "Message saved with id: " + id;
-	            }
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	            return "Failed to save message: " + e.getMessage();
+	    private String getCount(Connection connection) throws Exception {
+	        try (Statement stmt = connection.createStatement()) {
+	            ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS cnt FROM messages");
+	            if (rs.next()) return String.valueOf(rs.getInt("cnt"));
 	        }
-	        return "Failed to save message";
+	        return "0";
+	    }
+
+	    private int insertMessage(Connection connection, String content) throws Exception {
+	        try (CallableStatement stmt = connection.prepareCall(
+	                "INSERT INTO messages(content) VALUES(?) RETURNING id")) {
+	            stmt.setString(1, content);
+	            ResultSet rs = stmt.executeQuery();
+	            if (rs.next()) return rs.getInt("id");
+	        }
+	        return -1;
 	    }
 	}
+
 }
