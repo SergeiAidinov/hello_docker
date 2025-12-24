@@ -89,7 +89,7 @@ public class ServerWorkFlow {
 	            ResultSet rs = stmt.executeQuery();
 	            if (rs.next()) return rs.getString("content");
 	        }
-	        return "Message not found";
+	        return "Hello from Docker HTTP at " + LocalDateTime.now();
 	    }
 
 	    private String getCount(Connection connection) throws Exception {
