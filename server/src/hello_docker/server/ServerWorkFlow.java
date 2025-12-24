@@ -20,9 +20,9 @@ import java.sql.Statement;
 public class ServerWorkFlow {
 
 	private static ServerWorkFlow instance = null;
-	private final static String url = "jdbc:postgresql://postgres:5432/hello_db";
-	private final static String user = "user";
-	private final static String password = "password";
+	private static final String url = System.getenv().getOrDefault("DB_URL", "jdbc:postgresql://localhost:5432/hello_db");
+    private static final String user = System.getenv().getOrDefault("DB_USER", "user");
+    private static final String password = System.getenv().getOrDefault("DB_PASSWORD", "password");
 
 	private ServerWorkFlow() {
 
@@ -45,38 +45,70 @@ public class ServerWorkFlow {
 	}
 
 	static class MyHandler implements HttpHandler {
-		@Override
-		public void handle(HttpExchange httpExchange) throws IOException {
-			String method = httpExchange.getRequestMethod();
-			System.out.println(method);
-			String result = null;
-			if (method.equals("GET")) {
-				String path = httpExchange.getRequestURI().getPath();
-				String idStr = path.substring(1); // "1"
-				int id = Integer.parseInt(idStr);
-				result = handleGetRequest(id);
-				System.out.println(result);
-			}
-			String response = Objects.nonNull(result) ? result : "Hello from Docker HTTP at " + LocalDateTime.now();
-			httpExchange.sendResponseHeaders(200, response.getBytes().length);
-			OutputStream os = httpExchange.getResponseBody();
-			os.write(response.getBytes());
-			os.close();
-		}
 
-		private String handleGetRequest(int id) {
-			try (Connection connection = DriverManager.getConnection(url, user, password)) {
-				CallableStatement callableStatement = connection.prepareCall("select * from messages where id = ?");
-				callableStatement.setLong(1, id);
-				ResultSet rs = callableStatement.executeQuery();
-				if (rs.next()) return rs.getString("content");
+	    @Override
+	    public void handle(HttpExchange httpExchange) throws IOException {
+	        String method = httpExchange.getRequestMethod();
+	        System.out.println(method);
+	        String response;
 
-			} catch (Exception e) {
-				e.printStackTrace();
+	        try {
+	            if ("GET".equalsIgnoreCase(method)) {
+	                String path = httpExchange.getRequestURI().getPath();
+	                String idStr = path.substring(1); // Получаем "1" из "/1"
+	                int id = Integer.parseInt(idStr);
+	                response = handleGetRequest(id);
 
-			}
-			return null;
-		}
+	            } else if ("POST".equalsIgnoreCase(method)) {
+	                InputStream is = httpExchange.getRequestBody();
+	                String message = new String(is.readAllBytes());
+	                response = handlePostRequest(message);
 
+	            } else {
+	                response = "Unsupported method";
+	            }
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            response = "Error: " + e.getMessage();
+	        }
+
+	        httpExchange.sendResponseHeaders(200, response.getBytes().length);
+	        try (OutputStream os = httpExchange.getResponseBody()) {
+	            os.write(response.getBytes());
+	        }
+	    }
+
+	    /** Получение сообщения по id */
+	    private String handleGetRequest(int id) {
+	        try (Connection connection = DriverManager.getConnection(url, user, password);
+	             CallableStatement stmt = connection.prepareCall("SELECT * FROM messages WHERE id = ?")) {
+	            stmt.setLong(1, id);
+	            ResultSet rs = stmt.executeQuery();
+	            if (rs.next()) {
+	                return rs.getString("content");
+	            }
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	        return "Message not found";
+	    }
+
+	    /** Сохранение сообщения в базу */
+	    private String handlePostRequest(String message) {
+	        try (Connection connection = DriverManager.getConnection(url, user, password);
+	             java.sql.PreparedStatement stmt = connection.prepareStatement(
+	                     "INSERT INTO messages (content) VALUES (?) RETURNING id")) {
+	            stmt.setString(1, message);
+	            ResultSet rs = stmt.executeQuery();
+	            if (rs.next()) {
+	                int id = rs.getInt("id");
+	                return "Message saved with id: " + id;
+	            }
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            return "Failed to save message: " + e.getMessage();
+	        }
+	        return "Failed to save message";
+	    }
 	}
 }
